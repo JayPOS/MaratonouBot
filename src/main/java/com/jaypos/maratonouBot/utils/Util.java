@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 public class Util {
 
     public static Env ENV;
+    public static CodeforcesUtils cfUtils;
 
     static {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -37,6 +38,8 @@ public class Util {
         else {
             throw new RuntimeException("There is no path in " + envPath);
         }
+
+        cfUtils = new CodeforcesUtils(ENV.getKey(), ENV.getSecret());
     }
 
     public static String getInviteLink(JDA jda) {
