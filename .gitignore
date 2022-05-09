@@ -36,3 +36,6 @@ gradle-app.setting
 
 # Cache of project
 .gradletasknamecache
+
+#ignoring folder for env and similars
+public

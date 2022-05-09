@@ -50,10 +50,10 @@ public class CodeforcesUtils {
         int hour = (relativeTimeSeconds/60/60) % 24;
         int days = (relativeTimeSeconds/60/60)/24;
         return (index + " - **" + contest.getName() + "** starts in **"
-                + days + " day" + ( days > 1 ? "s, " : ", ")
-                + hour + " hour" + ( hour > 1 ? "s, " : ", ")
-                + minutes + " minute" + ( minutes > 1 ? "s and " : " and ")
-                + seconds + " seconds**");
+                + days + " day" + ( days != 1 ? "s, " : ", ")
+                + hour + " hour" + ( hour != 1 ? "s, " : ", ")
+                + minutes + " minute" + ( minutes != 1 ? "s and " : " and ")
+                + seconds + " second" + ( seconds != 1 ? "s**" : "**"));
     }
 
     public List<String> getNextContextList(final Boolean gym) throws CodeforcesApiException {
