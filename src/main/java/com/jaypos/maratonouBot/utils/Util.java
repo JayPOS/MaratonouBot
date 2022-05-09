@@ -17,17 +17,43 @@ public class Util {
     public static Env ENV;
     public static CodeforcesUtils cfUtils;
 
+
+    public static File searchEnv(File file) {
+        if(file.isDirectory())
+        {
+            File[] files = file.listFiles();
+            if (files == null)
+                return null;
+            for (File f: files) {
+//                System.out.println(f.toString());
+                File found = searchEnv(f);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        else {
+            if (file.toString().endsWith("public" + File.separator + "env.json")) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    public static File findEnv() {
+        Path actualPath = new File(System.getProperty("user.dir")).toPath();
+        int count = 0;
+        while (!actualPath.endsWith("MaratonouCodeforcesBot")){
+            actualPath = actualPath.getParent();
+        }
+        File envFile = searchEnv(actualPath.toFile());
+        return envFile;
+    }
+
     static {
         ObjectMapper objectMapper = new ObjectMapper();
-        Path currentPath = null;
-        try {
-            currentPath = new File(MaratonouBot.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toPath().getParent().getParent();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        Path envPath = Paths.get(currentPath.toString(), File.separator, "public", File.separator, "env.json" );
-        File envFile = envPath.toFile();
-        if (envFile.exists()) {
+        File envFile = findEnv();
+        if (envFile != null) {
             try {
                 ENV = objectMapper.readValue(envFile, Env.class);
             } catch (IOException e) {
@@ -36,9 +62,8 @@ public class Util {
             }
         }
         else {
-            throw new RuntimeException("There is no path in " + envPath);
+            throw new RuntimeException("Env file doesn`t exists");
         }
-
         cfUtils = new CodeforcesUtils(ENV.getKey(), ENV.getSecret());
     }
 

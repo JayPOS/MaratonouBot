@@ -27,7 +27,7 @@ public class MaratonouBot {
         jda.addEventListener(new SlashCommands());
         guildControl = new GuildControl();
         guildControl.addGuildById(Util.ENV.getTestingGuildName(), Util.ENV.getTestingGuildId());
-        guildControl.addSlashCommandToGuild("maratonou!", "oi", "Bot diz oi!");
+        guildControl.addSlashCommandsToGuild("maratonou!");
         System.out.println(Util.getInviteLink(jda));
     }
 

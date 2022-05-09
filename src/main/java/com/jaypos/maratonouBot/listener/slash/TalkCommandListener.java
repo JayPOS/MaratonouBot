@@ -21,12 +21,27 @@ public class TalkCommandListener extends ListenerAdapter {
     }
 
     private static void talkCommand(SlashCommandInteractionEvent event){
-
+        String secreto;
+        if (event.getOption("shh") != null){
+            secreto = event.getOption("shh").getAsString();
+            if (event.getUser().getName().equals("JPOS")) {
+                event.reply(secreto).queue();
+            }
+            else {
+                event.reply("shh").queue();
+            }
+        }
+        else{
+            event.reply("shh").queue();
+        }
     }
 
     public static void onTalkCommand(SlashCommandInteractionEvent event) {
         if (event.getName().equals("oi")) {
             oiCommand(event);
+        }
+        else if (event.getName().equals("secret")){
+            talkCommand(event);
         }
     }
 }
