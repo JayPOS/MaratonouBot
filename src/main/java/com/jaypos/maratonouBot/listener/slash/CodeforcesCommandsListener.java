@@ -2,13 +2,17 @@ package com.jaypos.maratonouBot.listener.slash;
 
 import com.jaypos.maratonouBot.utils.CodeforcesUtils;
 import com.jaypos.maratonouBot.utils.Util;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import ru.covariance.codeforcesapi.CodeforcesApiException;
 
+import java.awt.*;
 import java.util.List;
+import java.util.random.RandomGenerator;
 
 public class CodeforcesCommandsListener {
+    public static RandomGenerator randomGenerator = RandomGenerator.getDefault();
     public CodeforcesCommandsListener() {
     }
 
@@ -29,7 +33,7 @@ public class CodeforcesCommandsListener {
             event.reply("Rating of **" + handle + "** is now **" + rating + "**").queue();
         }
     }
-    public static void nextContestsCommand(SlashCommandInteractionEvent event) {
+    public static void nextContestsCommand(SlashCommandInteractionEvent event, boolean embed) {
         try {
             event.deferReply().queue();
             Boolean gym = Boolean.FALSE;
@@ -42,7 +46,15 @@ public class CodeforcesCommandsListener {
                 response += nextContestsMessages.get(i);
                 if (i < nextContestsMessages.size()-1) response += "\n";
             }
-            event.getHook().sendMessage(response).queue();
+            if(!embed) event.getHook().sendMessage(response).queue();
+            else {
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.setTimestamp(event.getTimeCreated());
+                eb.setColor(new Color( (int) (randomGenerator.nextDouble() * 0x1000000)));
+                eb.setTitle("Proximos Contests");
+                eb.setDescription(response);
+                event.getHook().sendMessageEmbeds(eb.build()).queue();
+            }
         } catch (CodeforcesApiException e) {
             e.printStackTrace();
             event.getHook().sendMessage("No next Contests available").queue();
@@ -54,7 +66,7 @@ public class CodeforcesCommandsListener {
             userRatingCommand(event);
         }
         else if (event.getName().equals("nextcontests")) {
-            nextContestsCommand(event);
+            nextContestsCommand(event, true);
         }
     }
 }

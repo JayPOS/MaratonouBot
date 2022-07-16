@@ -49,7 +49,7 @@ public class CodeforcesUtils {
         int minutes =  (relativeTimeSeconds / 60)%60;
         int hour = (relativeTimeSeconds/60/60) % 24;
         int days = (relativeTimeSeconds/60/60)/24;
-        return (index + " - **" + contest.getName() + "** starts in **"
+        return ("**" + contest.getName() + "** starts in **"
                 + days + " day" + ( days != 1 ? "s, " : ", ")
                 + hour + " hour" + ( hour != 1 ? "s, " : ", ")
                 + minutes + " minute" + ( minutes != 1 ? "s and " : " and ")

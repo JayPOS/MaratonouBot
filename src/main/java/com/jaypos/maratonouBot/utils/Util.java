@@ -43,8 +43,19 @@ public class Util {
     public static File findEnv() {
         Path actualPath = new File(System.getProperty("user.dir")).toPath();
         int count = 0;
-        while (!actualPath.endsWith("MaratonouCodeforcesBot")){
+        while (null != actualPath && !actualPath.endsWith("MaratonouCodeforcesBot")){
             actualPath = actualPath.getParent();
+        }
+        if (actualPath == null){
+            try {
+                actualPath = new File(Util.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toPath().getParent();
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+            while (!actualPath.endsWith("MaratonouCodeforcesBot")){
+                actualPath = actualPath.getParent();
+            }
+
         }
         File envFile = searchEnv(actualPath.toFile());
         return envFile;
