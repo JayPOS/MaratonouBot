@@ -1,0 +1,38 @@
+name: build
+on:
+  push:
+    branches:
+      - release
+      - 'feature/**'
+  pull_request:
+    branches:
+      - release
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Job
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v2
+
+      - name: 'Download latest JDK 17'
+        run: wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.tar.gz
+
+      - name: 'Set up JDK'
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'jdkfile'
+          jdkFile: jdk-17_linux-x64_bin.tar.gz
+          cache: 'gradle'
+
+      - name: 'Grant execute permission for gradlew'
+        run: chmod +x gradlew
+
+      - name: 'Build with Gradle'
+        env:
+          GITHUB_USERNAME: ${{ secrets.USER }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        run: ./gradlew deploy
