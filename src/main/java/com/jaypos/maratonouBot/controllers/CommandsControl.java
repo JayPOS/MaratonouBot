@@ -1,7 +1,9 @@
 package com.jaypos.maratonouBot.controllers;
 
+import com.softawii.curupira.core.Curupira;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+
 
 import static net.dv8tion.jda.api.interactions.commands.OptionType.*;
 

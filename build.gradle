@@ -16,6 +16,13 @@ repositories {
         url 'https://m2.dv8tion.net/releases'
     }
     maven { url 'https://jitpack.io' }
+    maven {
+        url 'https://maven.pkg.github.com/Softawii/curupira'
+        credentials {
+            username = System.getenv("GITHUB_USERNAME")
+            password = System.getenv("GITHUB_TOKEN")
+        }
+    }
 }
 
 dependencies {
@@ -26,6 +33,8 @@ dependencies {
     }
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.2.2'
     implementation 'com.github.CovarianceMomentum:codeforces-api:cc68c0543c'
+    implementation("com.softawii:curupira:0.2.0")
+    implementation("com.softawii:curupira:0.2.0:all")
 }
 
 test {

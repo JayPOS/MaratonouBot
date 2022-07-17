@@ -9,6 +9,7 @@ public class TalkCommandListener extends ListenerAdapter {
 
     public TalkCommandListener() {
     }
+
     private static void oiCommand(SlashCommandInteractionEvent event){
         User user;
         if (event.getOption("user") != null){
