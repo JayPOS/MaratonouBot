@@ -29,6 +29,9 @@ jobs:
         run: chmod +x gradlew
 
       - name: 'Build with Gradle'
+        env:
+          GITHUB_USERNAME: ${{ secrets.USER }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
         run: ./gradlew deploy
 
       - name: 'Creating Env File'
