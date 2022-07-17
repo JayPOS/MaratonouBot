@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.Permission;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -17,6 +18,22 @@ public class Util {
     public static Env ENV;
     public static CodeforcesUtils cfUtils;
 
+    public static void init (String envPath) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        File envFile = Paths.get(envPath).toFile();
+        if (envFile != null) {
+            try {
+                ENV = objectMapper.readValue(envFile, Env.class);
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("caiu porra");
+            }
+        }
+        else {
+            throw new RuntimeException("Env file doesn`t exists");
+        }
+        cfUtils = new CodeforcesUtils(ENV.getKey(), ENV.getSecret());
+    }
 
     public static File searchEnv(File file) {
         if(file.isDirectory())
@@ -52,7 +69,7 @@ public class Util {
             } catch (URISyntaxException e) {
                 e.printStackTrace();
             }
-            while (!actualPath.endsWith("MaratonouCodeforcesBot")){
+            while (!actualPath.endsWith("MaratonouBot")){
                 actualPath = actualPath.getParent();
             }
 
@@ -61,22 +78,6 @@ public class Util {
         return envFile;
     }
 
-    static {
-        ObjectMapper objectMapper = new ObjectMapper();
-        File envFile = findEnv();
-        if (envFile != null) {
-            try {
-                ENV = objectMapper.readValue(envFile, Env.class);
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("caiu porra");
-            }
-        }
-        else {
-            throw new RuntimeException("Env file doesn`t exists");
-        }
-        cfUtils = new CodeforcesUtils(ENV.getKey(), ENV.getSecret());
-    }
 
     public static String getInviteLink(JDA jda) {
         long clientId = jda.getSelfUser().getIdLong();

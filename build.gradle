@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 group 'org.example'
@@ -38,13 +39,23 @@ jar {
                 "Multi-Release": true
         )
     }
-
+    archiveName("MaratonouBot.jar")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     from {
         configurations.runtimeClasspath.collect {
             it.isDirectory() ? it : zipTree(it)
         }
+    }
+}
+
+task deploy() {
+    shadowJar {
+        archiveName("MaratonouBot.jar")
+    }
+    dependsOn 'shadowJar'
+    doLast {
+        println 'Porra'
     }
 }
 

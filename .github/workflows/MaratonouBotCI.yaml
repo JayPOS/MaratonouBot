@@ -1,0 +1,88 @@
+name: deploy
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Job
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v2
+
+      - name: 'Download latest JDK 17'
+        run: wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.tar.gz
+
+      - name: 'Set up JDK'
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'jdkfile'
+          jdkFile: jdk-17_linux-x64_bin.tar.gz
+          cache: 'gradle'
+
+      - name: 'Grant execute permission for gradlew'
+        run: chmod +x gradlew
+
+      - name: 'Build with Gradle'
+        run: ./gradlew deploy
+
+      - name: 'Creating Env File'
+        run: 'echo "$ENV_SECRET" > ./build/libs/env.json'
+        shell: bash
+        env:
+          ENV_SECRET: ${{ secrets.ENV_SECRET }}
+
+      - name: 'Wait for SSH'
+        run: |
+          while ! nc -w5 -z ${{ secrets.INSTANCE_IP }} 22; do
+                  sleep 5
+                  echo "SSH not available..."
+          done; echo "SSH ready!"
+
+      - name: 'Stop App'
+        uses: appleboy/ssh-action@master
+        continue-on-error: true
+        with:
+          host: ${{ secrets.INSTANCE_IP }}
+          username: ${{ secrets.SSH_USERNAME }}
+          passphrase: ${{ secrets.VM_SSH_PRIVATE_KEY_PASSPHRASE }}
+          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          script: |
+            sudo pkill -f 'java -jar .*MaratonouCodeforcesBot.*\.jar'
+
+      - name: 'Delete Previous App'
+        uses: appleboy/ssh-action@master
+        continue-on-error: true
+        with:
+          host: ${{ secrets.INSTANCE_IP }}
+          username: ${{ secrets.SSH_USERNAME }}
+          passphrase: ${{ secrets.VM_SSH_PRIVATE_KEY_PASSPHRASE }}
+          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          script: |
+            rm -rf ~/deploys/${{ github.event.repository.name }}/MaratonouBot.jar
+
+      - name: 'Push Repo'
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.INSTANCE_IP }}
+          username: ${{ secrets.SSH_USERNAME }}
+          passphrase: ${{ secrets.VM_SSH_PRIVATE_KEY_PASSPHRASE }}
+          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          source: "./build/libs/MaratonouBot.jar,./build/libs/env.json"
+          target: /home/${{ secrets.SSH_USERNAME }}/deploys/${{ github.event.repository.name }}
+          strip_components: 3
+
+      - name: 'Start BOT'
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.INSTANCE_IP }}
+          username: ${{ secrets.SSH_USERNAME }}
+          passphrase: ${{ secrets.VM_SSH_PRIVATE_KEY_PASSPHRASE }}
+          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          script: |
+            nohup java -jar /home/${{ secrets.SSH_USERNAME }}/deploys/${{ github.event.repository.name }}/MaratonouBot.jar --env /home/${{ secrets.SSH_USERNAME }}/deploys/${{ github.event.repository.name }}/env.json > nohup.out 2> nohup.err < /dev/null &
