@@ -11,7 +11,6 @@ public class SlashCommands extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        TalkCommandListener.onTalkCommand(event);
         CodeforcesCommandsListener.onCodeforcesCommand(event);
     }
 }
