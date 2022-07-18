@@ -9,6 +9,7 @@ import ru.covariance.codeforcesapi.entities.User;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class CodeforcesUtils {
@@ -56,7 +57,28 @@ public class CodeforcesUtils {
                 + seconds + " second" + ( seconds != 1 ? "s**" : "**"));
     }
 
-    public List<String> getNextContextList(final Boolean gym) throws CodeforcesApiException {
+    public List<Contest> getNextContests() throws CodeforcesApiException {
+        List<Contest> contestsList = api.contestList(false);
+        int secondsInHour = 60*60;
+        int secondsInDay = secondsInHour*24;
+        Collections.sort(contestsList, new Comparator<Contest>() {
+            @Override
+            public int compare(Contest lhs, Contest rhs) {
+                return lhs.getRelativeTimeSeconds() > rhs.getRelativeTimeSeconds() ? -1 : (lhs.getRelativeTimeSeconds() < rhs.getRelativeTimeSeconds()) ? 1 : 0;
+            }
+        });;
+        List<Contest> nextContests = null;
+        for (Contest contest: contestsList) {
+            if ((contest.getRelativeTimeSeconds()> 0)) break;
+            else if (Math.abs(contest.getRelativeTimeSeconds()) < secondsInDay) {
+                if (nextContests == null) nextContests = new ArrayList<Contest>();
+                nextContests.add(contest);
+            }
+        }
+        return nextContests;
+    }
+
+    public List<String> getNextContestsListMessages(final Boolean gym) throws CodeforcesApiException {
         List<Contest> contestsList = api.contestList(gym);
         List<String> contestListMessages = new ArrayList<String>();
         int contests_replyed = 5;
