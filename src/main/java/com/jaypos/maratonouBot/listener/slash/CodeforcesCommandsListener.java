@@ -4,6 +4,7 @@ import com.jaypos.maratonouBot.utils.CodeforcesUtils;
 import com.jaypos.maratonouBot.utils.Util;
 import com.softawii.curupira.annotations.IArgument;
 import com.softawii.curupira.annotations.ICommand;
+import com.softawii.curupira.annotations.IGroup;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -13,6 +14,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.random.RandomGenerator;
 
+@IGroup(name = "codeforcesCommand", description = "Lida com comandos relacionados ao Codeforces", hidden = true)
 public class CodeforcesCommandsListener {
     public static RandomGenerator randomGenerator = RandomGenerator.getDefault();
     public CodeforcesCommandsListener() {
