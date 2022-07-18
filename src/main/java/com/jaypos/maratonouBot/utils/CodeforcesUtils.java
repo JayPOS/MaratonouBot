@@ -1,5 +1,7 @@
 package com.jaypos.maratonouBot.utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.covariance.codeforcesapi.CodeforcesApiException;
 import ru.covariance.codeforcesapi.entities.Contest;
 import ru.covariance.codeforcesapi.entities.ContestStandings;
@@ -14,6 +16,7 @@ import java.util.List;
 
 public class CodeforcesUtils {
     private CodeforcesApi api;
+    public static final Logger LOGGER = LogManager.getLogger(CodeforcesUtils.class);
     public CodeforcesUtils(final String key, final String secret) {
         api = new CodeforcesApi(key, secret);
     }
@@ -64,13 +67,15 @@ public class CodeforcesUtils {
         Collections.sort(contestsList, new Comparator<Contest>() {
             @Override
             public int compare(Contest lhs, Contest rhs) {
-                return lhs.getRelativeTimeSeconds() > rhs.getRelativeTimeSeconds() ? -1 : (lhs.getRelativeTimeSeconds() < rhs.getRelativeTimeSeconds()) ? 1 : 0;
+                return lhs.getRelativeTimeSeconds().compareTo(rhs.getRelativeTimeSeconds());
             }
         });;
         List<Contest> nextContests = null;
         for (Contest contest: contestsList) {
-            if ((contest.getRelativeTimeSeconds()> 0)) break;
-            else if (Math.abs(contest.getRelativeTimeSeconds()) < secondsInDay) {
+            LOGGER.info("Time remaining till contest " + contest.getName() + ": " + contest.getRelativeTimeSeconds());
+            if ((contest.getRelativeTimeSeconds() > 0)) break;
+            else if (Math.abs(contest.getRelativeTimeSeconds()) < secondsInDay
+                    && contest.getPhase().equals("BEFORE")) {
                 if (nextContests == null) nextContests = new ArrayList<Contest>();
                 nextContests.add(contest);
             }

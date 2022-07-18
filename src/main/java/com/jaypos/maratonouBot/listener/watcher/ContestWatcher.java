@@ -7,6 +7,8 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import ru.covariance.codeforcesapi.CodeforcesApiException;
 import ru.covariance.codeforcesapi.entities.Contest;
@@ -22,6 +24,7 @@ import static com.jaypos.maratonouBot.listener.slash.CodeforcesCommandsListener.
 public class ContestWatcher extends ListenerAdapter {
     public static JDA jda;
     public static ScheduledExecutorService contestWatcher;
+    private static final Logger LOGGER = LogManager.getLogger(ContestWatcher.class);
 
     public ContestWatcher(){
     }
@@ -31,7 +34,7 @@ public class ContestWatcher extends ListenerAdapter {
         int secondsInDay = secondsInHour*24;
         if (Math.abs(nextContest.getRelativeTimeSeconds()) < secondsInDay
                 && Math.abs(nextContest.getRelativeTimeSeconds()) > secondsInDay-secondsInHour) {
-            return nextContest.getName()  + "starts in 1 day";
+            return nextContest.getName()  + " starts in 1 day";
         }
         return null;
     }
@@ -39,38 +42,39 @@ public class ContestWatcher extends ListenerAdapter {
     private static String createNextContestNextHourMessage(Contest nextContest) {
         int secondsInHour = 60*60;
         if (Math.abs(nextContest.getRelativeTimeSeconds()) < secondsInHour) {
-            return nextContest.getName()  + "starts in 1 hour";
+            return nextContest.getName()  + " starts in 1 hour";
         }
         return null;
     }
 
     @Override
     public void onReady(@NotNull ReadyEvent event) {
-        System.out.println("ReadyEvent triggered!");
-        jda = MaratonouBot.jda;
+        LOGGER.info("ReadyEvent triggered!");
         contestWatcher = Executors.newScheduledThreadPool(1);
         contestWatcher.scheduleAtFixedRate(() -> {
-            System.out.println("Disparando scheduler");
+            LOGGER.info("Triggering Contest Watcher scheduler");
+            jda = MaratonouBot.jda;
             List<Contest> nextContests;
             try {
                 nextContests = Util.cfUtils.getNextContests();
             } catch (CodeforcesApiException e) {
-                e.printStackTrace();
-                System.out.println("There is no contest close to start");
+                LOGGER.error("Bad request in Util.cfUtils.getNextContests() function - CodeforcesApiException");
                 return;
             }
             if (jda != null) {
-                System.out.println("Checking if Boti should send a Contest Alert!");
-                for (Contest contest: nextContests) {
-                    if (contest.getRelativeTimeSeconds() >= 0 ) {
-                        System.out.println("There is no Next Contest");
-                    }
-                    else {
+                LOGGER.info("jda is not null");
+                if (nextContests == null) {
+                    LOGGER.info("There is no next contests available!");
+                }
+                else {
+                    for (Contest contest: nextContests) {
                         for (Guild guild : jda.getGuilds() ) {
+                            LOGGER.info("Runnuing for guild " + guild.getName());
                             for (Category category : guild.getCategories()) {
                                 if (category.getName().endsWith("Contests")) {
                                     for (TextChannel msg_channel: category.getTextChannels()) {
                                         if (msg_channel.getName().endsWith("avisos")) {
+                                            LOGGER.info("Found target channel at guild " + msg_channel.getGuild().getName());
                                             String tomorrowContestMessage = createNextContestTomorrowMessage(contest);
                                             if (tomorrowContestMessage != null) {
                                                 EmbedBuilder eb = new EmbedBuilder();
@@ -96,6 +100,9 @@ public class ContestWatcher extends ListenerAdapter {
                     }
                 }
             }
-        }, 0, 30, TimeUnit.SECONDS);
+            else {
+                LOGGER.error("jda is null at ContestWatcher");
+            }
+        }, 0, 30, TimeUnit.MINUTES);
     }
 }
