@@ -35,6 +35,8 @@ dependencies {
     implementation 'com.github.CovarianceMomentum:codeforces-api:cc68c0543c'
     implementation("com.softawii:curupira:0.2.0")
     implementation("com.softawii:curupira:0.2.0:all")
+    implementation 'org.apache.logging.log4j:log4j-api:2.18.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.18.0'
 }
 
 test {
