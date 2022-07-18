@@ -1,7 +1,6 @@
 package com.jaypos.maratonouBot.entity;
 
 import com.jaypos.maratonouBot.listener.MessageListener;
-import com.jaypos.maratonouBot.listener.SlashCommands;
 import com.jaypos.maratonouBot.utils.Util;
 import com.softawii.curupira.core.Curupira;
 import net.dv8tion.jda.api.JDA;
