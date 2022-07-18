@@ -2,11 +2,11 @@ name: build
 on:
   push:
     branches:
-      - release
+      - develop
       - 'feature/**'
   pull_request:
     branches:
-      - release
+      - develop
   workflow_dispatch:
 
 jobs:
