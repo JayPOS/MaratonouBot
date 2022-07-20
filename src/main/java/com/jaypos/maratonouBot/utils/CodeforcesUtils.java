@@ -60,22 +60,18 @@ public class CodeforcesUtils {
                 + seconds + " second" + ( seconds != 1 ? "s**" : "**"));
     }
 
-    public List<Contest> getNextContests() throws CodeforcesApiException {
+    public List<Contest> getContestsStartingSoon() throws CodeforcesApiException {
         List<Contest> contestsList = api.contestList(false);
-        int secondsInHour = 60*60;
-        int secondsInDay = secondsInHour*24;
         Collections.sort(contestsList, new Comparator<Contest>() {
             @Override
             public int compare(Contest lhs, Contest rhs) {
                 return lhs.getRelativeTimeSeconds().compareTo(rhs.getRelativeTimeSeconds());
             }
-        });;
+        });
         List<Contest> nextContests = null;
         for (Contest contest: contestsList) {
-            LOGGER.info("Time remaining till contest " + contest.getName() + ": " + contest.getRelativeTimeSeconds());
-            if ((contest.getRelativeTimeSeconds() > 0)) break;
-            else if (Math.abs(contest.getRelativeTimeSeconds()) < secondsInDay
-                    && contest.getPhase().equals("BEFORE")) {
+            if(ContestAlerts.nextDayAlert(contest)) {
+                LOGGER.info("Time remaining till contest " + contest.getName() + ": " + contest.getRelativeTimeSeconds());
                 if (nextContests == null) nextContests = new ArrayList<Contest>();
                 nextContests.add(contest);
             }
