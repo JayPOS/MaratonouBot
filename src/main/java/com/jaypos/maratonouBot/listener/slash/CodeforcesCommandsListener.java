@@ -49,7 +49,7 @@ public class CodeforcesCommandsListener {
             if (event.getOption("gym") != null) {
                 gym = event.getOption("gym").getAsBoolean();
             }
-            List<String> nextContestsMessages = Util.cfUtils.getNextContextList(gym);
+            List<String> nextContestsMessages = Util.cfUtils.getNextContestsListMessages(gym);
             String response = "";
             for (int i = 0; i < nextContestsMessages.size(); i++) {
                 response += nextContestsMessages.get(i);

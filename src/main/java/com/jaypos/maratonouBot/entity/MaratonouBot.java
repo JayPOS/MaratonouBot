@@ -12,12 +12,16 @@ import java.net.URISyntaxException;
 
 public class MaratonouBot {
     public static JDA jda;
+    private static JDABuilder builder;
     private static Curupira curupira;
+
     public MaratonouBot() throws LoginException, URISyntaxException, InterruptedException {
-        jda = JDABuilder.createDefault(Util.ENV.getToken()).build().awaitReady();
-        curupira = new Curupira(jda, true, null, "com.jaypos.maratonouBot.listener");
-        jda.getPresence().setActivity(Activity.playing("VALORANT"));
-        jda.addEventListener(new MessageListener());
+        jda = JDABuilder.createDefault(Util.ENV.getToken())
+                .addEventListeners(new MessageListener())
+                .addEventListeners(new ContestWatcher())
+                .build().awaitReady();
+        curupira = new Curupira(jda, false, null, "com.jaypos.maratonouBot.listener");
+        jda.getPresence().setActivity(Activity.playing("Testando Alerta de Contest"));
         System.out.println(Util.getInviteLink(jda));
     }
 }
