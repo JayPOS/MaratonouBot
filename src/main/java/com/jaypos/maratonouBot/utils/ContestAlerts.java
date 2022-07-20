@@ -1,6 +1,10 @@
 package com.jaypos.maratonouBot.utils;
 
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.TextChannel;
 import ru.covariance.codeforcesapi.entities.Contest;
+
+import java.util.Objects;
 
 public class ContestAlerts {
     public static final int interval = 30;
@@ -25,5 +29,9 @@ public class ContestAlerts {
             return secondsRemainingTillStart <= secondsInHour;
         }
         return false;
+    }
+
+    public static void mentionMaratonistas(Guild guild, TextChannel channel) {
+        channel.sendMessage(Objects.requireNonNull(guild.getRoleById("999342194936774706")).getAsMention()).queue();
     }
 }

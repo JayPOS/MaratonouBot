@@ -20,7 +20,7 @@ public class MaratonouBot {
                 .addEventListeners(new MessageListener())
                 .addEventListeners(new ContestWatcher())
                 .build().awaitReady();
-        curupira = new Curupira(jda, true, null, "com.jaypos.maratonouBot.listener");
+        curupira = new Curupira(jda, false, null, "com.jaypos.maratonouBot.listener");
         jda.getPresence().setActivity(Activity.playing("Testando Alerta de Contest"));
         System.out.println(Util.getInviteLink(jda));
     }

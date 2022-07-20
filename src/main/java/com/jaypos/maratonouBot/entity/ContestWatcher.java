@@ -69,10 +69,12 @@ public class ContestWatcher extends ListenerAdapter {
                         LOGGER.info("Found target channel at guild " + msg_channel.getGuild().getName());
                         EmbedBuilder nextDayEb = nextContestTomorrowEmbed(contest);
                         if (nextDayEb != null) {
+                            ContestAlerts.mentionMaratonistas(guild, msg_channel);
                             msg_channel.sendMessageEmbeds(nextDayEb.build()).queue();
                         }
                         EmbedBuilder nextHourEb = nextContestNextHourEmbed(contest);
                         if (nextHourEb != null) {
+                            ContestAlerts.mentionMaratonistas(guild, msg_channel);
                             msg_channel.sendMessageEmbeds(nextHourEb.build()).queue();
                         }
                     }
