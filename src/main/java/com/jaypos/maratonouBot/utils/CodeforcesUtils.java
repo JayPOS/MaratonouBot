@@ -1,5 +1,7 @@
 package com.jaypos.maratonouBot.utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.covariance.codeforcesapi.CodeforcesApiException;
 import ru.covariance.codeforcesapi.entities.Contest;
 import ru.covariance.codeforcesapi.entities.ContestStandings;
@@ -9,10 +11,12 @@ import ru.covariance.codeforcesapi.entities.User;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class CodeforcesUtils {
     private CodeforcesApi api;
+    public static final Logger LOGGER = LogManager.getLogger(CodeforcesUtils.class);
     public CodeforcesUtils(final String key, final String secret) {
         api = new CodeforcesApi(key, secret);
     }
@@ -56,7 +60,26 @@ public class CodeforcesUtils {
                 + seconds + " second" + ( seconds != 1 ? "s**" : "**"));
     }
 
-    public List<String> getNextContextList(final Boolean gym) throws CodeforcesApiException {
+    public List<Contest> getContestsStartingSoon() throws CodeforcesApiException {
+        List<Contest> contestsList = api.contestList(false);
+        Collections.sort(contestsList, new Comparator<Contest>() {
+            @Override
+            public int compare(Contest lhs, Contest rhs) {
+                return lhs.getRelativeTimeSeconds().compareTo(rhs.getRelativeTimeSeconds());
+            }
+        });
+        List<Contest> nextContests = null;
+        for (Contest contest: contestsList) {
+            if(ContestAlerts.nextDayAlert(contest)) {
+                LOGGER.info("Time remaining till contest " + contest.getName() + ": " + contest.getRelativeTimeSeconds());
+                if (nextContests == null) nextContests = new ArrayList<Contest>();
+                nextContests.add(contest);
+            }
+        }
+        return nextContests;
+    }
+
+    public List<String> getNextContestsListMessages(final Boolean gym) throws CodeforcesApiException {
         List<Contest> contestsList = api.contestList(gym);
         List<String> contestListMessages = new ArrayList<String>();
         int contests_replyed = 5;
