@@ -31,52 +31,17 @@ public class ContestWatcher extends ListenerAdapter {
     public ContestWatcher(){
     }
 
-    private static EmbedBuilder contestAlertEmbed(Contest contest) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setColor(new Color( (int) (randomGenerator.nextDouble() * 0x1000000)));
-        eb.setTitle("Maratonou! Bot Announcement!");
-        try {
-            eb.setImage(new URL("https://i.imgur.com/VqRIMdG.png").toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        return eb;
-    }
-
-    private static EmbedBuilder nextContestTomorrowEmbed(Contest contest) {
-        if (ContestAlerts.nextDayAlert(contest)) {
-            EmbedBuilder eb = contestAlertEmbed(contest);
-            eb.setDescription(contest.getName() + " começa em 1 dia!");
-            return eb;
-        }
-        return null;
-    }
-
-    private static EmbedBuilder nextContestNextHourEmbed(Contest contest) {
-        if (ContestAlerts.nextHourAlert(contest)) {
-            EmbedBuilder eb = contestAlertEmbed(contest);
-            eb.setDescription(contest.getName() + " começa em 1 hora!");
-            return eb;
-        }
-        return null;
-    }
-
     private static void triggerAlert(Guild guild, Contest contest) {
         for (Category category : guild.getCategories()) {
             if (category.getName().endsWith("Contests")) {
                 for (TextChannel msg_channel: category.getTextChannels()) {
                     if (msg_channel.getName().endsWith("avisos")) {
                         LOGGER.info("Found target channel at guild " + msg_channel.getGuild().getName());
-                        EmbedBuilder nextDayEb = nextContestTomorrowEmbed(contest);
-                        if (nextDayEb != null) {
-                            ContestAlerts.mentionMaratonistas(guild, msg_channel);
-                            msg_channel.sendMessageEmbeds(nextDayEb.build()).queue();
-                        }
-                        EmbedBuilder nextHourEb = nextContestNextHourEmbed(contest);
-                        if (nextHourEb != null) {
-                            ContestAlerts.mentionMaratonistas(guild, msg_channel);
-                            msg_channel.sendMessageEmbeds(nextHourEb.build()).queue();
-                        }
+                        boolean ret;
+                        ret = ContestAlerts.triggerNextDayAlert(guild, contest, msg_channel);
+                        if (!ret) LOGGER.error("CONTEST COULD NOT BE ADDED TO BUFFER"); else LOGGER.info("contest added to buffer");
+                        ret = ContestAlerts.triggerNextHourAlert(guild, contest, msg_channel);
+                        if (!ret) LOGGER.error("CONTEST COULD NOT BE REMOVED FROM"); else LOGGER.info("contest removed from buffer");
                     }
                 }
             }
