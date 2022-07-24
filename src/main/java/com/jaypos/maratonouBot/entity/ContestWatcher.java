@@ -29,7 +29,7 @@ public class ContestWatcher extends ListenerAdapter {
     public static ScheduledExecutorService contestWatcher;
     private static final Logger LOGGER = LogManager.getLogger(ContestWatcher.class);
 
-    private static final CodeforcesControler cfControler = CodeforcesControler.getInstance();
+    private static final CodeforcesControler cfController = CodeforcesControler.getInstance();
 
     public ContestWatcher(){
     }
@@ -72,7 +72,7 @@ public class ContestWatcher extends ListenerAdapter {
             jda = MaratonouBot.jda;
             List<Contest> nextContests;
             try {
-                nextContests = Util.cfUtils.getContestsStartingSoon();
+                nextContests = cfController.getContestsStartingSoon();
             } catch (CodeforcesApiException e) {
                 LOGGER.error("Bad request in Util.cfUtils.getNextContests() function - CodeforcesApiException");
                 return;
