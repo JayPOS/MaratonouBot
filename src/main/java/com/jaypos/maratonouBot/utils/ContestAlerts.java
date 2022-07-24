@@ -93,7 +93,7 @@ public class ContestAlerts {
         return eb;
     }
 
-    private static EmbedBuilder nextContestEmbed(Contest contest) {
+    private static EmbedBuilder nextContestNextDayEmbed(Contest contest) {
         if (ContestAlerts.nextDayAlert(contest)) {
             EmbedBuilder eb = contestAlertEmbed(contest);
             eb.setDescription(cfController.parseContestMessage(contest));
@@ -102,8 +102,17 @@ public class ContestAlerts {
         return null;
     }
 
+    private static EmbedBuilder nextContestNextHourEmbed(Contest contest) {
+        if (ContestAlerts.nextHourAlert(contest)) {
+            EmbedBuilder eb = contestAlertEmbed(contest);
+            eb.setDescription(cfController.parseContestMessage(contest));
+            return eb;
+        }
+        return null;
+    }
+
     public static void triggerNextDayAlert (Guild guild, Contest contest, TextChannel msg_channel) {
-        EmbedBuilder nextDayEb = ContestAlerts.nextContestEmbed(contest);
+        EmbedBuilder nextDayEb = ContestAlerts.nextContestNextDayEmbed(contest);
         if (nextDayEb != null) {
             ContestAlerts.mentionMaratonistas(guild, msg_channel);
             msg_channel.sendMessageEmbeds(nextDayEb.build()).queue();
@@ -112,7 +121,7 @@ public class ContestAlerts {
     }
 
     public static void triggerNextHourAlert (Guild guild, Contest contest, TextChannel msg_channel) {
-        EmbedBuilder nextHourEb = ContestAlerts.nextContestEmbed(contest);
+        EmbedBuilder nextHourEb = ContestAlerts.nextContestNextHourEmbed(contest);
         if (nextHourEb != null) {
             ContestAlerts.mentionMaratonistas(guild, msg_channel);
             msg_channel.sendMessageEmbeds(nextHourEb.build()).queue();
