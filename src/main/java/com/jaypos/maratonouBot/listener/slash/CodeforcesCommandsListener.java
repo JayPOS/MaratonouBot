@@ -1,5 +1,6 @@
 package com.jaypos.maratonouBot.listener.slash;
 
+import com.jaypos.maratonouBot.controller.CodeforcesControler;
 import com.jaypos.maratonouBot.utils.CodeforcesUtils;
 import com.jaypos.maratonouBot.utils.Util;
 import com.softawii.curupira.annotations.IArgument;
@@ -17,6 +18,7 @@ import java.util.random.RandomGenerator;
 @IGroup(name = "codeforcesCommand", description = "Lida com comandos relacionados ao Codeforces", hidden = true)
 public class CodeforcesCommandsListener {
     public static RandomGenerator randomGenerator = RandomGenerator.getDefault();
+    private static final CodeforcesControler cfController = CodeforcesControler.getInstance();
     public CodeforcesCommandsListener() {
     }
 
@@ -30,7 +32,7 @@ public class CodeforcesCommandsListener {
             handle = event.getOption("handle").getAsString();
             String rating = null;
             try {
-                rating = Util.cfUtils.getUserRating(handle);
+                rating = cfController.getUserRating(handle);
             } catch (CodeforcesApiException e) {
                 e.printStackTrace();
                 event.reply("Handle **" + handle + "** not found").queue();

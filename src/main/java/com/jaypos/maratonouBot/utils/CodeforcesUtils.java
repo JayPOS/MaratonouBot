@@ -21,32 +21,6 @@ public class CodeforcesUtils {
         api = new CodeforcesApi(key, secret);
     }
 
-    private ContestStandings getContestStandings(final int contestId, final Integer from,
-                                      final Integer count, final List<String> handles, final Integer room,
-                                      final Boolean showUnofficial) throws CodeforcesApiException {
-        ContestStandings standings = api.contestStanding(contestId, from ,count, handles, room, showUnofficial);
-        return standings;
-    }
-
-    public String getContestStandingsMessage(final int contestId, final Integer from,
-                                             final Integer count, final List<String> handles, final Integer room,
-                                             final Boolean showUnofficial) throws CodeforcesApiException {
-        ContestStandings standings = getContestStandings(contestId, from ,count, handles, room, showUnofficial);
-        List<RanklistRow> standingsRows = standings.getRows();
-        standingsRows.forEach(ranklistRow -> {
-            int rank = ranklistRow.getRank();
-            String teamName = ranklistRow.getParty().getTeamName();
-            System.out.println(String.valueOf(rank) + " - " + teamName);
-        });
-        return "";
-    }
-
-    // A single User only!
-    public String getUserRating(String handle) throws CodeforcesApiException {
-        User user = api.userInfo(List.of(handle)).get(0);
-        return String.valueOf(user.getRating());
-    }
-
     private String parseContestMessage(Contest contest, int index) {
         int relativeTimeSeconds = Math.abs(contest.getRelativeTimeSeconds());
         int seconds = relativeTimeSeconds % 60;
@@ -60,6 +34,10 @@ public class CodeforcesUtils {
                 + seconds + " second" + ( seconds != 1 ? "s**" : "**"));
     }
 
+    public List<Contest> getContestList(boolean gym) throws CodeforcesApiException {
+        return api.contestList(gym);
+    }
+
     public List<Contest> getContestsStartingSoon() throws CodeforcesApiException {
         List<Contest> contestsList = api.contestList(false);
         Collections.sort(contestsList, new Comparator<Contest>() {
@@ -70,7 +48,7 @@ public class CodeforcesUtils {
         });
         List<Contest> nextContests = null;
         for (Contest contest: contestsList) {
-            if(ContestAlerts.nextDayAlert(contest)) {
+            if(contest.getPhase().equals("BEFORE")) {
                 LOGGER.info("Time remaining till contest " + contest.getName() + ": " + contest.getRelativeTimeSeconds());
                 if (nextContests == null) nextContests = new ArrayList<Contest>();
                 nextContests.add(contest);
