@@ -125,7 +125,7 @@ public class ContestAlerts {
         if (nextHourEb != null) {
             ContestAlerts.mentionMaratonistas(guild, msg_channel);
             msg_channel.sendMessageEmbeds(nextHourEb.build()).queue();
-            LOGGER.info("Day alert sent!");
+            LOGGER.info("Hour alert sent!");
         }
     }
 
