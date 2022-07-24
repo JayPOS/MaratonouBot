@@ -1,8 +1,11 @@
 package com.jaypos.maratonouBot.utils;
 
+import com.jaypos.maratonouBot.entity.ContestWatcher;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.covariance.codeforcesapi.entities.Contest;
 
 import java.awt.*;
@@ -16,29 +19,33 @@ import static com.jaypos.maratonouBot.listener.slash.CodeforcesCommandsListener.
 public class ContestAlerts {
     public static final int interval = 1;
 
-    private static ArrayList<Contest> contestBuffer = new ArrayList<Contest>();
+    private static ArrayList<Contest> contestAlertBuffer = new ArrayList<Contest>();
 
+    private static final Logger LOGGER = LogManager.getLogger(ContestAlerts.class);
     public ContestAlerts() {
     }
 
     private static boolean removeFromBuffer(Contest contest) {
         int id = contest.getId();
         int removedIndex = -1;
-        for (int i = 0; i < contestBuffer.size(); i++) {
-            if (contestBuffer.get(i).getId() == id) {
+        for (int i = 0; i < contestAlertBuffer.size(); i++) {
+            if (contestAlertBuffer.get(i).getId() == id) {
                 removedIndex = i;
                 break;
             }
         }
         if (removedIndex != -1) {
-            contestBuffer.remove(removedIndex);
+            contestAlertBuffer.remove(removedIndex);
             return true;
+        }
+        else {
+            LOGGER.info("Contest could not be removed from contestAlertBuffer!");
         }
         return false;
     }
 
     private static boolean loadToBuffer(Contest contest) {
-        return contestBuffer.add(contest);
+        return contestAlertBuffer.add(contest);
     }
 
     public static boolean nextDayAlert(Contest contest) {
@@ -46,7 +53,7 @@ public class ContestAlerts {
         int secondsInDay = secondsInHour*24;
         if (contest.getPhase().equals("BEFORE")) {
             int secondsRemainingTillStart = Math.abs(contest.getRelativeTimeSeconds());
-            if(secondsRemainingTillStart <= secondsInDay*3) return loadToBuffer(contest);
+            if(secondsRemainingTillStart <= secondsInDay) return loadToBuffer(contest);
         }
         return false;
     }
