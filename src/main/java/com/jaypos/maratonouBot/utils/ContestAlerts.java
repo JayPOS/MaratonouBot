@@ -25,15 +25,19 @@ public class ContestAlerts {
     public ContestAlerts() {
     }
 
-    private static boolean removeFromBuffer(Contest contest) {
+    private static int searchInBuffer(Contest contest) {
         int id = contest.getId();
-        int removedIndex = -1;
         for (int i = 0; i < contestAlertBuffer.size(); i++) {
             if (contestAlertBuffer.get(i).getId() == id) {
-                removedIndex = i;
-                break;
+                LOGGER.info(String.format("Contest %s found in buffer!", contest.getName()));
+                return i;
             }
         }
+        return -1;
+    }
+
+    private static boolean removeFromBuffer(Contest contest) {
+        int removedIndex = searchInBuffer(contest);
         if (removedIndex != -1) {
             contestAlertBuffer.remove(removedIndex);
             return true;
@@ -51,18 +55,27 @@ public class ContestAlerts {
     public static boolean nextDayAlert(Contest contest) {
         int secondsInHour = 60*60;
         int secondsInDay = secondsInHour*24;
+        LOGGER.info(String.format("Contest phase is %s", contest.getPhase()));
         if (contest.getPhase().equals("BEFORE")) {
             int secondsRemainingTillStart = Math.abs(contest.getRelativeTimeSeconds());
-            if(secondsRemainingTillStart <= secondsInDay) return loadToBuffer(contest);
+            if(secondsRemainingTillStart <= secondsInDay
+                    && searchInBuffer(contest) == -1) {
+                LOGGER.info("Loading to alert buffer");
+                return loadToBuffer(contest);
+            }
         }
         return false;
     }
 
     public static boolean nextHourAlert(Contest contest) {
         int secondsInHour = 60*60;
+        LOGGER.info(String.format("Contest phase is %s", contest.getPhase()));
         if (contest.getPhase().equals("BEFORE")) {
             int secondsRemainingTillStart = Math.abs(contest.getRelativeTimeSeconds());
-            if(secondsRemainingTillStart <= secondsInHour*2) return removeFromBuffer(contest);
+            if(secondsRemainingTillStart <= secondsInHour) {
+                LOGGER.info("removing from alert buffer");
+                return removeFromBuffer(contest);
+            }
         }
         return false;
     }
@@ -82,7 +95,7 @@ public class ContestAlerts {
     private static EmbedBuilder nextContestTomorrowEmbed(Contest contest) {
         if (ContestAlerts.nextDayAlert(contest)) {
             EmbedBuilder eb = contestAlertEmbed(contest);
-            eb.setDescription(contest.getName() + " comeÃ§a em 1 dia!");
+            eb.setDescription(contest.getName() + " começa em 1 dia!");
             return eb;
         }
         return null;
@@ -91,28 +104,28 @@ public class ContestAlerts {
     private static EmbedBuilder nextContestNextHourEmbed(Contest contest) {
         if (ContestAlerts.nextHourAlert(contest)) {
             EmbedBuilder eb = contestAlertEmbed(contest);
-            eb.setDescription(contest.getName() + " comeÃ§a em 1 hora!");
+            eb.setDescription(contest.getName() + " começa em 1 hora!");
             return eb;
         }
         return null;
     }
 
-    public static boolean triggerNextDayAlert (Guild guild, Contest contest, TextChannel msg_channel) {
+    public static void triggerNextDayAlert (Guild guild, Contest contest, TextChannel msg_channel) {
         EmbedBuilder nextDayEb = ContestAlerts.nextContestTomorrowEmbed(contest);
         if (nextDayEb != null) {
             ContestAlerts.mentionMaratonistas(guild, msg_channel);
             msg_channel.sendMessageEmbeds(nextDayEb.build()).queue();
+            LOGGER.info("Day alert sent!");
         }
-        return nextDayEb != null;
     }
 
-    public static boolean triggerNextHourAlert (Guild guild, Contest contest, TextChannel msg_channel) {
+    public static void triggerNextHourAlert (Guild guild, Contest contest, TextChannel msg_channel) {
         EmbedBuilder nextHourEb = ContestAlerts.nextContestNextHourEmbed(contest);
         if (nextHourEb != null) {
             ContestAlerts.mentionMaratonistas(guild, msg_channel);
             msg_channel.sendMessageEmbeds(nextHourEb.build()).queue();
+            LOGGER.info("Day alert sent!");
         }
-        return nextHourEb != null;
     }
 
     public static void mentionMaratonistas(Guild guild, TextChannel channel) {

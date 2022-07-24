@@ -65,7 +65,7 @@ public class CodeforcesControler {
     }
 
 
-    private String parseContestMessage(Contest contest, int index) {
+    private String parseContestMessage(Contest contest) {
         int relativeTimeSeconds = Math.abs(contest.getRelativeTimeSeconds());
         int seconds = relativeTimeSeconds % 60;
         int minutes =  (relativeTimeSeconds / 60)%60;
@@ -81,24 +81,21 @@ public class CodeforcesControler {
     public List<Contest> getContestList(boolean gym) throws CodeforcesApiException {
         return api.contestList(gym);
     }
-    public List<String> getNextContestsListMessages(final Boolean gym) throws CodeforcesApiException {
-        List<Contest> contestsList = api.contestList(gym);
+    public List<String> getNextContestsListMessages(boolean gym) throws CodeforcesApiException {
+        List<Contest> contestsList = getContestsStartingSoon(gym);
         List<String> contestListMessages = new ArrayList<String>();
-        int contests_replyed = 5;
         for (Contest c: contestsList) {
-            if (contests_replyed < 1) break;
             if (c.getPhase().equals("BEFORE"))
             {
-                contestListMessages.add(parseContestMessage(c, contests_replyed));
-                contests_replyed--;
+                contestListMessages.add(parseContestMessage(c));
             }
         }
         if (!contestListMessages.isEmpty()) Collections.reverse(contestListMessages);
         return contestListMessages;
     }
 
-    public List<Contest> getContestsStartingSoon() throws CodeforcesApiException {
-        List<Contest> contestsList = api.contestList(false);
+    public List<Contest> getContestsStartingSoon(boolean gym) throws CodeforcesApiException {
+        List<Contest> contestsList = api.contestList(gym);
         Collections.sort(contestsList, new Comparator<Contest>() {
             @Override
             public int compare(Contest lhs, Contest rhs) {

@@ -40,11 +40,9 @@ public class ContestWatcher extends ListenerAdapter {
                 for (TextChannel msg_channel: category.getTextChannels()) {
                     if (msg_channel.getName().endsWith("avisos")) {
                         LOGGER.info("Found target channel at guild " + msg_channel.getGuild().getName());
-                        if (!ContestAlerts.triggerNextDayAlert(guild, contest, msg_channel)) LOGGER.error("Next say alert was not triggered!");
-                        else LOGGER.info("contest added to buffer");
-                        if (!ContestAlerts.triggerNextHourAlert(guild, contest, msg_channel))
-                            LOGGER.error("Next hour alert was not triggered!");
-                        else LOGGER.info("contest removed from buffer");
+                        LOGGER.info(String.format("Analising for %s, starting in %d", contest.getName(), Math.abs(contest.getRelativeTimeSeconds())));
+                        ContestAlerts.triggerNextDayAlert(guild, contest, msg_channel);
+                        ContestAlerts.triggerNextHourAlert(guild, contest, msg_channel);
                     }
                 }
             }
@@ -70,15 +68,15 @@ public class ContestWatcher extends ListenerAdapter {
         contestWatcher.scheduleAtFixedRate(() -> {
             LOGGER.info("Triggering Contest Watcher scheduler");
             jda = MaratonouBot.jda;
-            List<Contest> nextContests;
-            try {
-                nextContests = cfController.getContestsStartingSoon();
-            } catch (CodeforcesApiException e) {
-                LOGGER.error("Bad request in Util.cfUtils.getNextContests() function - CodeforcesApiException");
-                return;
-            }
             if (jda != null) {
                 LOGGER.info("jda is not null");
+                List<Contest> nextContests;
+                try {
+                    nextContests = cfController.getContestsStartingSoon(false);
+                } catch (CodeforcesApiException e) {
+                    LOGGER.error("Bad request in Util.cfUtils.getNextContests() function - CodeforcesApiException");
+                    return;
+                }
                 if (nextContests == null) {
                     LOGGER.info("There is no next contests available!");
                 }
