@@ -1,5 +1,6 @@
 package com.jaypos.maratonouBot.entity;
 
+import com.jaypos.maratonouBot.controller.CodeforcesControler;
 import com.jaypos.maratonouBot.utils.ContestAlerts;
 import com.jaypos.maratonouBot.utils.Util;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -28,6 +29,8 @@ public class ContestWatcher extends ListenerAdapter {
     public static ScheduledExecutorService contestWatcher;
     private static final Logger LOGGER = LogManager.getLogger(ContestWatcher.class);
 
+    private static final CodeforcesControler cfControler = CodeforcesControler.getInstance();
+
     public ContestWatcher(){
     }
 
@@ -37,11 +40,11 @@ public class ContestWatcher extends ListenerAdapter {
                 for (TextChannel msg_channel: category.getTextChannels()) {
                     if (msg_channel.getName().endsWith("avisos")) {
                         LOGGER.info("Found target channel at guild " + msg_channel.getGuild().getName());
-                        boolean ret;
-                        ret = ContestAlerts.triggerNextDayAlert(guild, contest, msg_channel);
-                        if (!ret) LOGGER.error("CONTEST COULD NOT BE ADDED TO BUFFER"); else LOGGER.info("contest added to buffer");
-                        ret = ContestAlerts.triggerNextHourAlert(guild, contest, msg_channel);
-                        if (!ret) LOGGER.error("CONTEST COULD NOT BE REMOVED FROM"); else LOGGER.info("contest removed from buffer");
+                        if (!ContestAlerts.triggerNextDayAlert(guild, contest, msg_channel)) LOGGER.error("Next say alert was not triggered!");
+                        else LOGGER.info("contest added to buffer");
+                        if (!ContestAlerts.triggerNextHourAlert(guild, contest, msg_channel))
+                            LOGGER.error("Next hour alert was not triggered!");
+                        else LOGGER.info("contest removed from buffer");
                     }
                 }
             }
