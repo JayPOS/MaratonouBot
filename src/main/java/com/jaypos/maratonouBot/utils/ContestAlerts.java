@@ -1,5 +1,6 @@
 package com.jaypos.maratonouBot.utils;
 
+import com.jaypos.maratonouBot.controller.CodeforcesControler;
 import com.jaypos.maratonouBot.entity.ContestWatcher;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -18,8 +19,8 @@ import static com.jaypos.maratonouBot.listener.slash.CodeforcesCommandsListener.
 
 public class ContestAlerts {
     public static final int interval = 1;
-
     private static ArrayList<Contest> contestAlertBuffer = new ArrayList<Contest>();
+    private static CodeforcesControler cfController = CodeforcesControler.getInstance();
 
     private static final Logger LOGGER = LogManager.getLogger(ContestAlerts.class);
     public ContestAlerts() {
@@ -92,26 +93,17 @@ public class ContestAlerts {
         return eb;
     }
 
-    private static EmbedBuilder nextContestTomorrowEmbed(Contest contest) {
+    private static EmbedBuilder nextContestEmbed(Contest contest) {
         if (ContestAlerts.nextDayAlert(contest)) {
             EmbedBuilder eb = contestAlertEmbed(contest);
-            eb.setDescription(contest.getName() + " começa em 1 dia!");
-            return eb;
-        }
-        return null;
-    }
-
-    private static EmbedBuilder nextContestNextHourEmbed(Contest contest) {
-        if (ContestAlerts.nextHourAlert(contest)) {
-            EmbedBuilder eb = contestAlertEmbed(contest);
-            eb.setDescription(contest.getName() + " começa em 1 hora!");
+            eb.setDescription(cfController.parseContestMessage(contest));
             return eb;
         }
         return null;
     }
 
     public static void triggerNextDayAlert (Guild guild, Contest contest, TextChannel msg_channel) {
-        EmbedBuilder nextDayEb = ContestAlerts.nextContestTomorrowEmbed(contest);
+        EmbedBuilder nextDayEb = ContestAlerts.nextContestEmbed(contest);
         if (nextDayEb != null) {
             ContestAlerts.mentionMaratonistas(guild, msg_channel);
             msg_channel.sendMessageEmbeds(nextDayEb.build()).queue();
@@ -120,7 +112,7 @@ public class ContestAlerts {
     }
 
     public static void triggerNextHourAlert (Guild guild, Contest contest, TextChannel msg_channel) {
-        EmbedBuilder nextHourEb = ContestAlerts.nextContestNextHourEmbed(contest);
+        EmbedBuilder nextHourEb = ContestAlerts.nextContestEmbed(contest);
         if (nextHourEb != null) {
             ContestAlerts.mentionMaratonistas(guild, msg_channel);
             msg_channel.sendMessageEmbeds(nextHourEb.build()).queue();

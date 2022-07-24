@@ -65,7 +65,7 @@ public class CodeforcesControler {
     }
 
 
-    private String parseContestMessage(Contest contest) {
+    public String parseContestMessage(Contest contest) {
         int relativeTimeSeconds = Math.abs(contest.getRelativeTimeSeconds());
         int seconds = relativeTimeSeconds % 60;
         int minutes =  (relativeTimeSeconds / 60)%60;
