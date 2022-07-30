@@ -1,5 +1,6 @@
 package com.jaypos.maratonouBot.entity;
 
+import com.jaypos.maratonouBot.controller.CodeforcesControler;
 import com.jaypos.maratonouBot.utils.ContestAlerts;
 import com.jaypos.maratonouBot.utils.Util;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -28,37 +29,9 @@ public class ContestWatcher extends ListenerAdapter {
     public static ScheduledExecutorService contestWatcher;
     private static final Logger LOGGER = LogManager.getLogger(ContestWatcher.class);
 
+    private static final CodeforcesControler cfController = CodeforcesControler.getInstance();
+
     public ContestWatcher(){
-    }
-
-    private static EmbedBuilder contestAlertEmbed(Contest contest) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setColor(new Color( (int) (randomGenerator.nextDouble() * 0x1000000)));
-        eb.setTitle("Maratonou! Bot Announcement!");
-        try {
-            eb.setImage(new URL("https://i.imgur.com/VqRIMdG.png").toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        return eb;
-    }
-
-    private static EmbedBuilder nextContestTomorrowEmbed(Contest contest) {
-        if (ContestAlerts.nextDayAlert(contest)) {
-            EmbedBuilder eb = contestAlertEmbed(contest);
-            eb.setDescription(contest.getName() + " começa em 1 dia!");
-            return eb;
-        }
-        return null;
-    }
-
-    private static EmbedBuilder nextContestNextHourEmbed(Contest contest) {
-        if (ContestAlerts.nextHourAlert(contest)) {
-            EmbedBuilder eb = contestAlertEmbed(contest);
-            eb.setDescription(contest.getName() + " começa em 1 hora!");
-            return eb;
-        }
-        return null;
     }
 
     private static void triggerAlert(Guild guild, Contest contest) {
@@ -67,16 +40,9 @@ public class ContestWatcher extends ListenerAdapter {
                 for (TextChannel msg_channel: category.getTextChannels()) {
                     if (msg_channel.getName().endsWith("avisos")) {
                         LOGGER.info("Found target channel at guild " + msg_channel.getGuild().getName());
-                        EmbedBuilder nextDayEb = nextContestTomorrowEmbed(contest);
-                        if (nextDayEb != null) {
-                            ContestAlerts.mentionMaratonistas(guild, msg_channel);
-                            msg_channel.sendMessageEmbeds(nextDayEb.build()).queue();
-                        }
-                        EmbedBuilder nextHourEb = nextContestNextHourEmbed(contest);
-                        if (nextHourEb != null) {
-                            ContestAlerts.mentionMaratonistas(guild, msg_channel);
-                            msg_channel.sendMessageEmbeds(nextHourEb.build()).queue();
-                        }
+                        LOGGER.info(String.format("Analising for %s, starting in %d", contest.getName(), Math.abs(contest.getRelativeTimeSeconds())));
+                        ContestAlerts.triggerNextDayAlert(guild, contest, msg_channel);
+                        ContestAlerts.triggerNextHourAlert(guild, contest, msg_channel);
                     }
                 }
             }
@@ -102,15 +68,22 @@ public class ContestWatcher extends ListenerAdapter {
         contestWatcher.scheduleAtFixedRate(() -> {
             LOGGER.info("Triggering Contest Watcher scheduler");
             jda = MaratonouBot.jda;
-            List<Contest> nextContests;
-            try {
-                nextContests = Util.cfUtils.getContestsStartingSoon();
-            } catch (CodeforcesApiException e) {
-                LOGGER.error("Bad request in Util.cfUtils.getNextContests() function - CodeforcesApiException");
-                return;
-            }
             if (jda != null) {
                 LOGGER.info("jda is not null");
+                List<Contest> nextContests = null;
+                ContestAlerts.updateAlertBuffers();
+                try {
+                    nextContests = cfController.getContestsStartingSoon(false);
+                } catch (CodeforcesApiException e) {
+                    LOGGER.error("Bad request in getContestsStartingSoon function - CodeforcesApiException");
+                    LOGGER.info("Trying to get from controller buffer!");
+                    try {
+                        nextContests = cfController.getContestBuffer();
+                    }
+                    catch (NullPointerException f) {
+                        LOGGER.error("Bad request in getContestBuffer function - NullPointerException");
+                    }
+                }
                 if (nextContests == null) {
                     LOGGER.info("There is no next contests available!");
                 }

@@ -16,7 +16,6 @@ import java.nio.file.Paths;
 public class Util {
 
     public static Env ENV;
-    public static CodeforcesUtils cfUtils;
 
     public static void init (String envPath) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -32,7 +31,6 @@ public class Util {
         else {
             throw new RuntimeException("Env file doesn`t exists");
         }
-        cfUtils = new CodeforcesUtils(ENV.getKey(), ENV.getSecret());
     }
 
     public static File searchEnv(File file) {

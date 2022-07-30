@@ -1,12 +1,10 @@
 package com.jaypos.maratonouBot.listener.slash;
 
-import com.jaypos.maratonouBot.utils.CodeforcesUtils;
-import com.jaypos.maratonouBot.utils.Util;
+import com.jaypos.maratonouBot.controller.CodeforcesControler;
 import com.softawii.curupira.annotations.IArgument;
 import com.softawii.curupira.annotations.ICommand;
 import com.softawii.curupira.annotations.IGroup;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import ru.covariance.codeforcesapi.CodeforcesApiException;
 
@@ -17,6 +15,7 @@ import java.util.random.RandomGenerator;
 @IGroup(name = "codeforcesCommand", description = "Lida com comandos relacionados ao Codeforces", hidden = true)
 public class CodeforcesCommandsListener {
     public static RandomGenerator randomGenerator = RandomGenerator.getDefault();
+    private static final CodeforcesControler cfController = CodeforcesControler.getInstance();
     public CodeforcesCommandsListener() {
     }
 
@@ -30,7 +29,7 @@ public class CodeforcesCommandsListener {
             handle = event.getOption("handle").getAsString();
             String rating = null;
             try {
-                rating = Util.cfUtils.getUserRating(handle);
+                rating = cfController.getUserRating(handle);
             } catch (CodeforcesApiException e) {
                 e.printStackTrace();
                 event.reply("Handle **" + handle + "** not found").queue();
@@ -40,8 +39,8 @@ public class CodeforcesCommandsListener {
         }
     }
 
-    @ICommand(name = "nextcontests", description = "Boti responde quais s√£o os 5 pr√≥ximos contests")
-    @IArgument(name = "gym", description = "Se valor √© true, mostra os gyms tamb√©m")
+    @ICommand(name = "nextcontests", description = "Boti responde quais s„o os 5 prÛximos contests")
+    @IArgument(name = "gym", description = "Se valor È true, mostra os gyms tambÈm")
     public static void nextContestsCommand(SlashCommandInteractionEvent event) {
         try {
             event.deferReply().queue();
@@ -49,7 +48,7 @@ public class CodeforcesCommandsListener {
             if (event.getOption("gym") != null) {
                 gym = event.getOption("gym").getAsBoolean();
             }
-            List<String> nextContestsMessages = Util.cfUtils.getNextContestsListMessages(gym);
+            List<String> nextContestsMessages = cfController.getNextContestsListMessages(gym);
             String response = "";
             for (int i = 0; i < nextContestsMessages.size(); i++) {
                 response += nextContestsMessages.get(i);
@@ -58,7 +57,7 @@ public class CodeforcesCommandsListener {
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTimestamp(event.getTimeCreated());
             eb.setColor(new Color( (int) (randomGenerator.nextDouble() * 0x1000000)));
-            eb.setTitle("Proximos Contests");
+            eb.setTitle("PrÛximos Contests");
             eb.setDescription(response);
             event.getHook().sendMessageEmbeds(eb.build()).queue();
         } catch (CodeforcesApiException e) {
