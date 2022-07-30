@@ -3,7 +3,10 @@ package com.jaypos.maratonouBot.utils;
 import com.jaypos.maratonouBot.controller.CodeforcesControler;
 import com.jaypos.maratonouBot.entity.ContestWatcher;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,20 +16,22 @@ import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Objects;
 
 import static com.jaypos.maratonouBot.listener.slash.CodeforcesCommandsListener.randomGenerator;
 
 public class ContestAlerts {
     public static final int interval = 1;
-    private static ArrayList<Contest> contestAlertBuffer = new ArrayList<Contest>();
+    private static ArrayList<Contest> contestDayAlertBuffer = new ArrayList<Contest>();
+    private static ArrayList<Contest> contestHourAlertBuffer = new ArrayList<Contest>();
     private static CodeforcesControler cfController = CodeforcesControler.getInstance();
 
     private static final Logger LOGGER = LogManager.getLogger(ContestAlerts.class);
     public ContestAlerts() {
     }
 
-    private static int searchInBuffer(Contest contest) {
+    private static int searchInBuffer(ArrayList<Contest> contestAlertBuffer, Contest contest) {
         int id = contest.getId();
         for (int i = 0; i < contestAlertBuffer.size(); i++) {
             if (contestAlertBuffer.get(i).getId() == id) {
@@ -37,8 +42,8 @@ public class ContestAlerts {
         return -1;
     }
 
-    private static boolean removeFromBuffer(Contest contest) {
-        int removedIndex = searchInBuffer(contest);
+    private static boolean removeFromBuffer(ArrayList<Contest> contestAlertBuffer, Contest contest) {
+        int removedIndex = searchInBuffer(contestAlertBuffer,contest);
         if (removedIndex != -1) {
             contestAlertBuffer.remove(removedIndex);
             return true;
@@ -49,8 +54,25 @@ public class ContestAlerts {
         return false;
     }
 
-    private static boolean loadToBuffer(Contest contest) {
+    private static boolean loadToBuffer(ArrayList<Contest> contestAlertBuffer,Contest contest) {
         return contestAlertBuffer.add(contest);
+    }
+
+    public static void updateAlertBuffers() {
+        Iterator<Contest> it = contestDayAlertBuffer.iterator();
+        while (it.hasNext()) {
+            Contest contest = it.next();
+            if (!contest.getPhase().equals("BEFORE")) {
+                it.remove();
+            }
+        }
+        it = contestHourAlertBuffer.iterator();
+        while (it.hasNext()) {
+            Contest contest = it.next();
+            if (!contest.getPhase().equals("BEFORE")) {
+                it.remove();
+            }
+        }
     }
 
     public static boolean nextDayAlert(Contest contest) {
@@ -60,9 +82,9 @@ public class ContestAlerts {
         if (contest.getPhase().equals("BEFORE")) {
             int secondsRemainingTillStart = Math.abs(contest.getRelativeTimeSeconds());
             if(secondsRemainingTillStart <= secondsInDay
-                    && searchInBuffer(contest) == -1) {
-                LOGGER.info("Loading to alert buffer");
-                return loadToBuffer(contest);
+                    && searchInBuffer(contestDayAlertBuffer, contest) == -1) {
+                LOGGER.info("Loading to day alert buffer");
+                return loadToBuffer(contestDayAlertBuffer, contest);
             }
         }
         return false;
@@ -73,9 +95,10 @@ public class ContestAlerts {
         LOGGER.info(String.format("Contest phase is %s", contest.getPhase()));
         if (contest.getPhase().equals("BEFORE")) {
             int secondsRemainingTillStart = Math.abs(contest.getRelativeTimeSeconds());
-            if(secondsRemainingTillStart <= secondsInHour) {
-                LOGGER.info("removing from alert buffer");
-                return removeFromBuffer(contest);
+            if(secondsRemainingTillStart <= secondsInHour
+                    && searchInBuffer(contestHourAlertBuffer, contest) == -1) {
+                LOGGER.info("Loading to hour alert buffer");
+                return loadToBuffer(contestHourAlertBuffer, contest);
             }
         }
         return false;
@@ -111,25 +134,33 @@ public class ContestAlerts {
         return null;
     }
 
-    public static void triggerNextDayAlert (Guild guild, Contest contest, TextChannel msg_channel) {
+    public static void triggerNextDayAlert (Guild guild, Contest contest, TextChannel msg_channel) throws NullPointerException {
         EmbedBuilder nextDayEb = ContestAlerts.nextContestNextDayEmbed(contest);
         if (nextDayEb != null) {
-            ContestAlerts.mentionMaratonistas(guild, msg_channel);
-            msg_channel.sendMessageEmbeds(nextDayEb.build()).queue();
+            MessageBuilder messageBuilder = new MessageBuilder(nextDayEb);
+            Role maratonistas = guild.getRoleById("999342194936774706");
+            if (maratonistas == null ) {
+                LOGGER.error("Role Maratonistas does not exists");
+                throw new NullPointerException();
+            }
+            messageBuilder.append((maratonistas.getAsMention()));
+            msg_channel.sendMessage(messageBuilder.build()).queue();
             LOGGER.info("Day alert sent!");
         }
     }
 
-    public static void triggerNextHourAlert (Guild guild, Contest contest, TextChannel msg_channel) {
+    public static void triggerNextHourAlert (Guild guild, Contest contest, TextChannel msg_channel) throws NullPointerException {
         EmbedBuilder nextHourEb = ContestAlerts.nextContestNextHourEmbed(contest);
         if (nextHourEb != null) {
-            ContestAlerts.mentionMaratonistas(guild, msg_channel);
-            msg_channel.sendMessageEmbeds(nextHourEb.build()).queue();
+            MessageBuilder messageBuilder = new MessageBuilder(nextHourEb);
+            Role maratonistas = guild.getRoleById("999342194936774706");
+            if (maratonistas == null ) {
+                LOGGER.error("Role Maratonistas does not exists");
+                throw new NullPointerException();
+            }
+            messageBuilder.append((maratonistas.getAsMention()));
+            msg_channel.sendMessage(messageBuilder.build()).queue();
             LOGGER.info("Hour alert sent!");
         }
-    }
-
-    public static void mentionMaratonistas(Guild guild, TextChannel channel) {
-        channel.sendMessage(Objects.requireNonNull(guild.getRoleById("999342194936774706")).getAsMention()).queue();
     }
 }

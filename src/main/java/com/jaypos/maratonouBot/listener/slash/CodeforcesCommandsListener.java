@@ -39,8 +39,8 @@ public class CodeforcesCommandsListener {
         }
     }
 
-    @ICommand(name = "nextcontests", description = "Boti responde quais sÃ£o os 5 prÃ³ximos contests")
-    @IArgument(name = "gym", description = "Se valor Ã© true, mostra os gyms tambÃ©m")
+    @ICommand(name = "nextcontests", description = "Boti responde quais são os 5 próximos contests")
+    @IArgument(name = "gym", description = "Se valor é true, mostra os gyms também")
     public static void nextContestsCommand(SlashCommandInteractionEvent event) {
         try {
             event.deferReply().queue();
@@ -57,7 +57,7 @@ public class CodeforcesCommandsListener {
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTimestamp(event.getTimeCreated());
             eb.setColor(new Color( (int) (randomGenerator.nextDouble() * 0x1000000)));
-            eb.setTitle("Proximos Contests");
+            eb.setTitle("Próximos Contests");
             eb.setDescription(response);
             event.getHook().sendMessageEmbeds(eb.build()).queue();
         } catch (CodeforcesApiException e) {

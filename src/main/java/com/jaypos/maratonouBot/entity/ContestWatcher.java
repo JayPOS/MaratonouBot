@@ -70,12 +70,19 @@ public class ContestWatcher extends ListenerAdapter {
             jda = MaratonouBot.jda;
             if (jda != null) {
                 LOGGER.info("jda is not null");
-                List<Contest> nextContests;
+                List<Contest> nextContests = null;
+                ContestAlerts.updateAlertBuffers();
                 try {
                     nextContests = cfController.getContestsStartingSoon(false);
                 } catch (CodeforcesApiException e) {
-                    LOGGER.error("Bad request in Util.cfUtils.getNextContests() function - CodeforcesApiException");
-                    return;
+                    LOGGER.error("Bad request in getContestsStartingSoon function - CodeforcesApiException");
+                    LOGGER.info("Trying to get from controller buffer!");
+                    try {
+                        nextContests = cfController.getContestBuffer();
+                    }
+                    catch (NullPointerException f) {
+                        LOGGER.error("Bad request in getContestBuffer function - NullPointerException");
+                    }
                 }
                 if (nextContests == null) {
                     LOGGER.info("There is no next contests available!");

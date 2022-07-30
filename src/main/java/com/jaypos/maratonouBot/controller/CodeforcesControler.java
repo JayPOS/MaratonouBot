@@ -19,7 +19,7 @@ public class CodeforcesControler {
 
     private static final CodeforcesApi api = new CodeforcesApi(Util.ENV.getKey(), Util.ENV.getSecret());
     private static final CodeforcesControler cfController = new CodeforcesControler();
-    private static ArrayList<Contest> contestsBuffer = null;
+    private static List<Contest> contestsBuffer = null;
 
     public static final Logger LOGGER = LogManager.getLogger(CodeforcesControler.class);
     private CodeforcesControler() {
@@ -29,14 +29,13 @@ public class CodeforcesControler {
         return cfController;
     }
 
-    private static void updateContestBuffer(ArrayList<Contest> contestList) {
-        if (contestList != null) {
-            contestsBuffer = null;
-            contestsBuffer = new ArrayList<Contest>(contestList);
-        }
+    private static void updateContestBuffer(List<Contest> contestList) {
+        contestsBuffer = null;
+        contestsBuffer = new ArrayList<Contest>(contestList);
     }
 
-    private static ArrayList<Contest> getContestBuffer() {
+    public List<Contest> getContestBuffer() throws NullPointerException{
+        if (contestsBuffer == null) throw new NullPointerException();
         return contestsBuffer;
     }
 
@@ -109,6 +108,9 @@ public class CodeforcesControler {
                 if (nextContests == null) nextContests = new ArrayList<Contest>();
                 nextContests.add(contest);
             }
+        }
+        if (nextContests != null) {
+            updateContestBuffer(nextContests);
         }
         return nextContests;
     }
