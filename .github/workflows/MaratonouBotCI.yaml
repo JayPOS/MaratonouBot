@@ -14,14 +14,14 @@ jobs:
         uses: actions/checkout@v2
 
       - name: 'Download latest JDK 17'
-        run: wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.tar.gz
+        run: wget -O jdk-17.0.12_linux-x64_bin.tar.gz https://download.oracle.com/java/17/archive/jdk-17.0.12_linux-x64_bin.tar.gz
 
       - name: 'Set up JDK'
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'jdkfile'
-          jdkFile: jdk-17_linux-x64_bin.tar.gz
+          jdkFile: ./jdk-17.0.12_linux-x64_bin.tar
           cache: 'gradle'
 
       - name: 'Grant execute permission for gradlew'
