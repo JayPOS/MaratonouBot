@@ -1,13 +1,11 @@
 plugins {
     id 'java'
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group 'org.example'
 version '1.0-SNAPSHOT'
-
-
 
 repositories {
     mavenCentral()
@@ -26,8 +24,7 @@ dependencies {
     }
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.2.2'
     implementation 'com.github.CovarianceMomentum:codeforces-api:cc68c0543c'
-    implementation 'com.github.Softawii:curupira:v0.2.9'
-    implementation 'com.github.Softawii:curupira:v0.2.9:all'
+    implementation 'com.github.softawii:curupira:v0.2.9'
     implementation 'org.apache.logging.log4j:log4j-api:2.18.0'
     implementation 'org.apache.logging.log4j:log4j-core:2.18.0'
 }
@@ -36,33 +33,31 @@ test {
     useJUnitPlatform()
 }
 
-jar {
-    manifest {
-        attributes (
-                "Main-Class": application.getMainClass(),
-                "Multi-Release": true
-        )
-    }
-    archiveName("MaratonouBot.jar")
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+application {
+    // Defina explicitamente a classe principal da aplicação
+    mainClass.set("com.jaypos.maratonouBot.Main")
+}
 
-    from {
-        configurations.runtimeClasspath.collect {
-            it.isDirectory() ? it : zipTree(it)
+tasks.shadowJar {
+    archiveBaseName.set("MaratonouBot") // Nome base do arquivo
+    archiveVersion.set("1.0.0")         // Versão
+    archiveClassifier.set("")           // Remove "-all" do nome final
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE // Resolve conflitos de arquivos duplicados
+
+    // Configuração do manifest
+    doFirst {
+        manifest {
+            attributes(
+                    "Main-Class": application.mainClass.get(), // Pegue o valor definido no plugin application
+                    "Multi-Release": true
+            )
         }
     }
 }
 
-task deploy() {
-    shadowJar {
-        archiveName("MaratonouBot.jar")
-    }
-    dependsOn 'shadowJar'
+// Tarefa extra de deploy (opcional)
+tasks.register('deploy') {
     doLast {
-        println 'Porra'
+        println 'Deploy executado com sucesso!'
     }
-}
-
-application {
-    mainClass.set("com.jaypos.maratonouBot.Main")
 }
